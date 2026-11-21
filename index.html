@@ -49,6 +49,15 @@ h2{letter-spacing:-.7px;font-weight:820}
 .bottom{box-shadow:0 -5px 20px rgba(20,48,65,.045)}
 .bottom button.active{color:#117447;background:#e8f4ed}
 
+
+/* Histórico: gesto de deslizamiento para eliminar */
+.history-row{position:relative;overflow:hidden;border-bottom:1px solid var(--line);border-radius:9px;touch-action:pan-y}
+.history-row:last-child{border-bottom:0}
+.history-row-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 8px;background:#fff;transition:transform .2s ease}
+.history-row.swiped .history-row-inner{transform:translateX(-76px)}
+.delete-record{position:absolute;right:0;top:0;bottom:0;width:76px;border:0;background:#c43d42;color:#fff;font-size:20px;font-weight:800;display:grid;place-items:center;cursor:pointer}
+.delete-record:active{background:#a92c34}
+
 </style>
 </head>
 <body>
@@ -67,9 +76,7 @@ h2{letter-spacing:-.7px;font-weight:820}
 <div class="date-line" id="entryDate"></div>
 <button class="btn btn-primary" id="saveWeight">＋ Guardar peso</button><div class="notice" id="saveNotice" aria-live="polite"></div>
 </div>
-<div class="section-title"><h3>Última evolución</h3><span class="pill">Últimos 7 registros</span></div>
-<div class="card evolution" id="latestEvolution"><div class="empty">Todavía no hay registros. Introduce tu primer peso.</div></div>
-<div class="section-title"><h3>Histórico completo</h3><span class="pill" id="recordCount">0 registros</span></div>
+<div class="section-title"><h3>Histórico de registros</h3><span class="pill" id="recordCount">0 registros</span></div>
 <div class="card scroll-history" id="history"><div class="empty">Tu histórico aparecerá aquí.</div></div>
 </section>
 <section id="inicio" class="hidden">
@@ -93,7 +100,7 @@ h2{letter-spacing:-.7px;font-weight:820}
 <div class="goal-foot">
 <div class="stat"><label>Peso perdido</label><strong class="green" id="lostWeight">—</strong><small>kg</small></div>
 <div class="stat"><label>Me faltan</label><strong id="remainingWeight">—</strong><small>kg</small></div>
-<div class="stat"><label>Fecha prevista</label><strong id="targetDate" style="font-size:14px">—</strong><small>estimada</small></div>
+<div class="stat"><label>Fecha prevista</label><strong id="targetDate" style="font-size:14px">—</strong><small>fecha elegida</small></div>
 </div>
 </div>
 <div class="card">
@@ -101,6 +108,7 @@ h2{letter-spacing:-.7px;font-weight:820}
 <div class="settings">
 <div class="field"><label for="startWeight">Peso inicial (kg)</label><input id="startWeight" type="number" min="1" max="500" step=".1" placeholder="Ej. 89"></div>
 <div class="field"><label for="targetWeight">Peso objetivo (kg)</label><input id="targetWeight" type="number" min="1" max="500" step=".1" placeholder="Ej. 82"></div>
+<div class="field" style="grid-column:1/-1"><label for="goalDate">Fecha prevista para cumplir el objetivo</label><input id="goalDate" type="date"></div>
 </div>
 <button class="btn btn-secondary" id="saveGoal" style="width:100%;margin-top:12px">Guardar objetivo</button><div class="notice" id="goalNotice"></div>
 </div>
@@ -139,22 +147,16 @@ function signed(n){return (n>0?'+':n<0?'−':'')+kg(Math.abs(n))}
 function ordered(){return [...records].sort((a,b)=>b.date.localeCompare(a.date))}
 function deltaClass(n){return n<0?'green':n>0?'red':'neutral'}
 function deltaText(n){return n<0?'▼ '+kg(Math.abs(n))+' kg':n>0?'▲ '+kg(n)+' kg':'＝ 0,0 kg'}
-function renderEvolution(){
- const list=ordered(), latest=list.slice(0,7);
- $('latestEvolution').innerHTML=latest.length?latest.map((r,i)=>{let prev=list[i+1],d=prev?r.weight-prev.weight:null;return `<div class="evo-row"><span class="evo-date">${fmtDate(r.date,{day:'numeric',month:'long',year:'numeric'})}</span><span class="evo-weight">${kg(r.weight)} kg</span><span class="evo-change ${d===null?'neutral':deltaClass(d)}">${d===null?'—':deltaText(d)}</span></div>`}).join(''):'<div class="empty">Todavía no hay registros. Introduce tu primer peso.</div>';
- $('history').innerHTML=list.length?list.map((r,i)=>{let prev=list[i+1],d=prev?r.weight-prev.weight:null;return `<div class="evo-row"><span class="evo-date">${fmtDate(r.date,{day:'numeric',month:'long',year:'numeric'})}</span><span class="evo-weight">${kg(r.weight)} kg</span><span class="evo-change ${d===null?'neutral':deltaClass(d)}">${d===null?'—':deltaText(d)}</span></div>`}).join(''):'<div class="empty">Tu histórico aparecerá aquí.</div>';
+function renderHistory(){
+ const list=ordered();
+ $('history').innerHTML=list.length?list.map((r,i)=>{
+  let prev=list[i+1],d=prev?r.weight-prev.weight:null;
+  return `<div class="history-row" data-date="${r.date}">
+   <button class="delete-record" type="button" aria-label="Eliminar registro" title="Eliminar">🗑</button>
+   <div class="history-row-inner"><span class="evo-date">${fmtDate(r.date,{day:'numeric',month:'long',year:'numeric'})}</span><span class="evo-weight">${kg(r.weight)} kg</span><span class="evo-change ${d===null?'neutral':deltaClass(d)}">${d===null?'—':deltaText(d)}</span></div>
+  </div>`;
+ }).join(''):'<div class="empty">Tu histórico aparecerá aquí.</div>';
  $('recordCount').textContent=list.length+' registros';
-}
-function estimateDate(current,target,list){
- if(current<=target)return 'Objetivo alcanzado';
- // Estimate from robust average weekly change over the latest 28 days, only when there are enough data points.
- const cutoff=new Date();cutoff.setDate(cutoff.getDate()-28);const recent=list.filter(r=>new Date(r.date+'T12:00:00')>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
- if(recent.length<5)return 'Aún sin datos';
- const days=(new Date(recent.at(-1).date+'T12:00:00')-new Date(recent[0].date+'T12:00:00'))/86400000;
- const loss=recent[0].weight-recent.at(-1).weight;
- if(days<7||loss<=0)return 'Tendencia no disponible';
- const perDay=loss/days;if(perDay<=0)return 'Tendencia no disponible';
- const d=new Date();d.setDate(d.getDate()+Math.ceil((current-target)/perDay));return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
 }
 function renderHome(){
  const list=ordered(),latest=list[0],prev=list[1],initial=Number(goal.start)||list.at(-1)?.weight,target=Number(goal.target);
@@ -169,9 +171,9 @@ function renderHome(){
  $('goalPercent').textContent=target&&initial?pct.toFixed(1).replace('.',',')+' %':'— %';$('goalBar').style.width=pct+'%';
  $('lostWeight').textContent=lost===null?'—':signed(lost);$('lostWeight').className=lost!==null&&lost>=0?'green':lost!==null?'red':'';
  $('remainingWeight').textContent=remaining===null?'—':kg(remaining);
- $('targetDate').textContent=latest&&target?estimateDate(latest.weight,target,list):'—';
+ $('targetDate').textContent=goal.date?fmtDate(goal.date,{day:'numeric',month:'long',year:'numeric'}):'—';
  $('goalStatus').textContent=!target||!initial?'Por configurar':latest&&latest.weight<=target?'¡Objetivo alcanzado!':'En progreso';
- $('startWeight').value=goal.start||'';$('targetWeight').value=goal.target||'';
+ $('startWeight').value=goal.start||'';$('targetWeight').value=goal.target||'';$('goalDate').value=goal.date||'';
 }
 function renderChart(){
  const list=ordered().reverse(),canvas=$('weightChart'),ctx=canvas.getContext('2d'),wrap=canvas.parentElement,rect=wrap.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
@@ -194,14 +196,24 @@ function renderChart(){
  }
  const latest=ordered()[0];$('chartCurrent').textContent=latest?kg(latest.weight):'—';$('chartMin').textContent=list.length?kg(Math.min(...list.map(r=>r.weight))):'—';let first=list[0],last=list.at(-1);$('chartDelta').textContent=first&&last?signed(last.weight-first.weight):'—';
 }
-function render(){renderEvolution();renderHome();renderChart()}
+function render(){renderHistory();renderHome();renderChart()}
 function switchTab(name){document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.id!==name));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='grafica')renderChart();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 $('todayLabel').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
 $('entryDate').textContent='Fecha de registro: '+fmtDate(isoToday());
 $('saveWeight').addEventListener('click',()=>{let value=Number(String($('weightInput').value).replace(',','.'));if(!Number.isFinite(value)||value<=0||value>500){$('saveNotice').textContent='Introduce un peso válido en kilogramos.';return}let date=isoToday();let idx=records.findIndex(r=>r.date===date);if(idx>=0)records[idx].weight=value;else records.push({date,weight:value});save(KEY,records);$('weightInput').value='';$('saveNotice').textContent='Peso guardado correctamente.';render()});
-$('saveGoal').addEventListener('click',()=>{let start=Number($('startWeight').value),target=Number($('targetWeight').value);if(!start||!target||start<=target||target<=0){$('goalNotice').textContent='Introduce un peso inicial mayor que tu peso objetivo.';return}goal={start:String(start),target:String(target)};save(GOAL,goal);$('goalNotice').textContent='Objetivo guardado.';renderHome()});
-document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{period=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));renderChart()}));
+$('saveGoal').addEventListener('click',()=>{let start=Number($('startWeight').value),target=Number($('targetWeight').value),date=$('goalDate').value;if(!start||!target||start<=target||target<=0){$('goalNotice').textContent='Introduce un peso inicial mayor que tu peso objetivo.';return}if(!date){$('goalNotice').textContent='Elige la fecha prevista para cumplir tu objetivo.';return}goal={...goal,start:String(start),target:String(target),date};save(GOAL,goal);$('goalNotice').textContent='Objetivo y fecha prevista guardados.';renderHome()});
+// Deslizar un registro hacia la izquierda muestra la papelera.
+let swipeStartX=0,swipeStartY=0,activeSwipe=null;
+$('history').addEventListener('touchstart',e=>{const row=e.target.closest('.history-row');if(!row)return;swipeStartX=e.changedTouches[0].clientX;swipeStartY=e.changedTouches[0].clientY;activeSwipe=row;},{passive:true});
+$('history').addEventListener('touchend',e=>{if(!activeSwipe)return;const dx=e.changedTouches[0].clientX-swipeStartX,dy=e.changedTouches[0].clientY-swipeStartY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){activeSwipe.classList.toggle('swiped',dx<0);$('history').querySelectorAll('.history-row').forEach(r=>{if(r!==activeSwipe)r.classList.remove('swiped')});}activeSwipe=null;},{passive:true});
+$('history').addEventListener('click',e=>{const button=e.target.closest('.delete-record');if(!button)return;const row=button.closest('.history-row'),date=row.dataset.date;if(!confirm(`¿Estás seguro de que quieres eliminar el registro del ${fmtDate(date,{day:'numeric',month:'long',year:'numeric'})}?`))return;records=records.filter(r=>r.date!==date);save(KEY,records);render();});
+document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{period=b.dataset.period;// Deslizar un registro hacia la izquierda muestra la papelera.
+let swipeStartX=0,swipeStartY=0,activeSwipe=null;
+$('history').addEventListener('touchstart',e=>{const row=e.target.closest('.history-row');if(!row)return;swipeStartX=e.changedTouches[0].clientX;swipeStartY=e.changedTouches[0].clientY;activeSwipe=row;},{passive:true});
+$('history').addEventListener('touchend',e=>{if(!activeSwipe)return;const dx=e.changedTouches[0].clientX-swipeStartX,dy=e.changedTouches[0].clientY-swipeStartY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){activeSwipe.classList.toggle('swiped',dx<0);$('history').querySelectorAll('.history-row').forEach(r=>{if(r!==activeSwipe)r.classList.remove('swiped')});}activeSwipe=null;},{passive:true});
+$('history').addEventListener('click',e=>{const button=e.target.closest('.delete-record');if(!button)return;const row=button.closest('.history-row'),date=row.dataset.date;if(!confirm(`¿Estás seguro de que quieres eliminar el registro del ${fmtDate(date,{day:'numeric',month:'long',year:'numeric'})}?`))return;records=records.filter(r=>r.date!==date);save(KEY,records);render();});
+document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));renderChart()}));
 $('monthPicker').value=isoToday().slice(0,7);$('monthPicker').addEventListener('change',renderChart);window.addEventListener('resize',()=>{if(!$('grafica').classList.contains('hidden'))renderChart()});
 render();
 if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
