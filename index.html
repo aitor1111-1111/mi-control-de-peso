@@ -78,6 +78,35 @@ h2{letter-spacing:-.7px;font-weight:820}
 .mini-muted{font-size:11px;color:var(--muted)}
 @media(max-width:370px){.tab{min-width:70px}.bottom button{font-size:8px}}
 
+
+.calorie-visuals{display:flex;align-items:center;justify-content:space-around;gap:16px;margin:14px 0 18px}
+.calorie-donut{width:142px;height:142px;flex:0 0 142px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#72d6a0 0deg,#ffffff35 0deg);position:relative}
+.calorie-donut:before{content:"";position:absolute;inset:17px;border-radius:50%;background:#205345}
+.calorie-donut>div{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center}
+.calorie-donut strong{font-size:25px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.calorie-donut small{font-size:10px;color:#d1e4dc}
+.calorie-legend{display:grid;gap:12px;min-width:0;flex:1}
+.calorie-legend>div{display:grid;grid-template-columns:10px 1fr;column-gap:7px;align-items:center;font-size:11px;color:#e0eee8}
+.calorie-legend i{width:9px;height:9px;border-radius:3px;grid-row:span 2}
+.calorie-legend b{grid-column:2;font-size:12px;color:#fff}
+.calorie-grid{height:70px;display:grid;grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(4,1fr);gap:4px;margin:14px 0}
+.calorie-grid-fill{display:contents}
+.calorie-grid span{background:#ffffff35;border-radius:2px}
+.calorie-grid span.filled{background:#72d6a0}
+.calorie-caption{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:10px;color:#d1e4dc}
+.macro-page-visual .calorie-donut:before{background:#fff}
+.macro-page-visual .calorie-donut strong{color:var(--navy)}
+.macro-page-visual .calorie-donut small{color:var(--muted)}
+.macro-page-visual .calorie-legend>div{color:var(--muted)}
+.macro-page-visual .calorie-legend b{color:var(--navy)}
+.macro-grid span{background:#e7ecef}.macro-grid span.filled{background:#16834b}
+.macro-pie-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:15px;margin-top:14px;gap:10px}
+.macro-pie-row p{font-size:11px;color:var(--muted);margin:5px 0}
+.macro-pie{width:116px;height:116px;border-radius:50%;background:conic-gradient(#3289c7 0 33%,#d69b35 33% 50%,#ed837c 50% 100%);position:relative;flex:0 0 116px}
+.macro-pie:after{content:"";position:absolute;inset:27px;border-radius:50%;background:#fff}
+.macro-pie-legend{display:grid;gap:5px;font-size:11px}
+.macro-pie-legend span:nth-child(1){color:#3289c7}.macro-pie-legend span:nth-child(2){color:#d69b35}.macro-pie-legend span:nth-child(3){color:#ed837c}
+@media(max-width:390px){.calorie-donut{width:118px;height:118px;flex-basis:118px}.calorie-legend{gap:8px}.calorie-grid{gap:3px}}
 </style>
 </head>
 <body>
@@ -154,9 +183,19 @@ h2{letter-spacing:-.7px;font-weight:820}
 <section id="diario" class="hidden">
 <h2>Diario de alimentación</h2><p class="sub" id="foodDateLabel">REGISTRO DE COMIDAS DEL DÍA</p>
 <div class="food-total">
-<div class="eyebrow" style="color:#c4dfd1">CALORÍAS CONSUMIDAS</div>
-<div class="big"><span id="dayKcal">0</span> <span style="font-size:14px;font-weight:600">kcal</span></div>
-<div class="mini-muted" style="color:#d1e4dc">Objetivo: <span id="foodGoalKcal">1800</span> kcal · Restantes: <span id="foodRemaining">1800</span> kcal</div>
+<div class="eyebrow" style="color:#c4dfd1">RESUMEN DE CALORÍAS DEL DÍA</div>
+<div class="calorie-visuals">
+ <div class="calorie-donut" id="calorieDonut"><div><strong id="donutConsumed">0</strong><small>consumidas</small></div></div>
+ <div class="calorie-legend">
+  <div><i style="background:#72d6a0"></i><span>Consumidas</span><b id="legendConsumed">0 kcal</b></div>
+  <div><i style="background:#ffffff55"></i><span>Restantes</span><b id="legendRemaining">1800 kcal</b></div>
+  <div><i style="background:#f4c96b"></i><span>Objetivo</span><b id="legendGoal">1800 kcal</b></div>
+ </div>
+</div>
+<div class="calorie-grid" aria-label="Progreso de calorías">
+ <div class="calorie-grid-fill" id="calorieGridFill"></div>
+</div>
+<div class="calorie-caption"><span><b id="dayKcal">0</b> kcal consumidas</span><span>Objetivo: <b id="foodGoalKcal">1800</b> kcal</span><span>Restantes: <b id="foodRemaining">1800</b> kcal</span></div>
 <div class="macrobar" style="margin-top:12px;background:#ffffff35"><span id="kcalBar" style="width:0%;background:#72d6a0"></span></div>
 </div>
 <div class="formgrid" style="margin-bottom:14px">
@@ -167,7 +206,18 @@ h2{letter-spacing:-.7px;font-weight:820}
 </section>
 <section id="macros" class="hidden">
 <h2>Mis macronutrientes</h2><p class="sub">RESUMEN NUTRICIONAL DEL DÍA SELECCIONADO</p>
-<div class="card"><div class="eyebrow">CALORÍAS TOTALES</div><div style="font-size:34px;font-weight:850;color:var(--navy);margin:5px 0"><span id="macroKcal">0</span> kcal</div><div class="mini-muted">Objetivo diario: <span id="macroTarget">1800</span> kcal</div></div>
+<div class="card"><div class="eyebrow">CALORÍAS Y DISTRIBUCIÓN</div><div class="calorie-visuals macro-page-visual">
+ <div class="calorie-donut" id="macroCalorieDonut"><div><strong id="macroDonutConsumed">0</strong><small>consumidas</small></div></div>
+ <div class="calorie-legend">
+  <div><i style="background:#16834b"></i><span>Consumidas</span><b id="macroLegendConsumed">0 kcal</b></div>
+  <div><i style="background:#dfe6e9"></i><span>Restantes</span><b id="macroLegendRemaining">1800 kcal</b></div>
+  <div><i style="background:#f4c96b"></i><span>Objetivo</span><b id="macroLegendGoal">1800 kcal</b></div>
+ </div>
+</div>
+<div class="calorie-grid macro-grid"><div class="calorie-grid-fill" id="macroCalorieGridFill"></div></div>
+<div class="calorie-caption"><span><b id="macroKcal">0</b> kcal</span><span>Objetivo: <b id="macroTarget">1800</b> kcal</span></div>
+<div class="macro-pie-row"><div><b>Distribución de macros</b><p>Según los alimentos registrados hoy</p><div class="macro-pie-legend"><span>● Hidratos</span><span>● Grasas</span><span>● Proteínas</span></div></div><div class="macro-pie" id="macroPie"></div></div>
+</div>
 <div class="card" id="macroBars"></div>
 <div class="card"><h3 style="font-size:15px;margin:0 0 8px">Objetivos de macros</h3><div class="formgrid">
 <div class="field"><label for="goalProtein">Proteínas (g)</label><input id="goalProtein" type="number" value="190"></div>
@@ -279,8 +329,19 @@ function saveMeals(){save(MEALKEY,meals)}
 function renderFood(){
  const date=currentFoodDate(),t=totals(date),target=Number($('foodTarget').value)||macroGoals.kcal;
  $('foodDateLabel').textContent=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
- $('dayKcal').textContent=Math.round(t.kcal);$('foodGoalKcal').textContent=target;$('foodRemaining').textContent=Math.max(0,Math.round(target-t.kcal));$('kcalBar').style.width=Math.min(100,t.kcal/target*100)+'%';
- $('macroKcal').textContent=Math.round(t.kcal);$('macroTarget').textContent=target;$('macroTarget').textContent=target;
+ const consumed=Math.max(0,t.kcal),remaining=Math.max(0,target-consumed),pct=Math.min(100,consumed/Math.max(1,target))*100;
+ $('dayKcal').textContent=Math.round(consumed);$('foodGoalKcal').textContent=target;$('foodRemaining').textContent=Math.round(remaining);$('kcalBar').style.width=pct+'%';
+ $('macroKcal').textContent=Math.round(consumed);$('macroTarget').textContent=target;
+ const donutBg=`conic-gradient(#72d6a0 0 ${pct*3.6}deg,#ffffff45 ${pct*3.6}deg 360deg)`;
+ $('calorieDonut').style.background=donutBg;$('donutConsumed').textContent=Math.round(consumed);
+ $('legendConsumed').textContent=Math.round(consumed)+' kcal';$('legendRemaining').textContent=Math.round(remaining)+' kcal';$('legendGoal').textContent=Math.round(target)+' kcal';
+ $('calorieGridFill').innerHTML=Array.from({length:80},(_,i)=>`<span class="${i<Math.round(pct/100*80)?'filled':''}"></span>`).join('');
+ const macroBg=`conic-gradient(#16834b 0 ${pct*3.6}deg,#dfe6e9 ${pct*3.6}deg 360deg)`;
+ $('macroCalorieDonut').style.background=macroBg;$('macroDonutConsumed').textContent=Math.round(consumed);
+ $('macroLegendConsumed').textContent=Math.round(consumed)+' kcal';$('macroLegendRemaining').textContent=Math.round(remaining)+' kcal';$('macroLegendGoal').textContent=Math.round(target)+' kcal';
+ $('macroCalorieGridFill').innerHTML=Array.from({length:80},(_,i)=>`<span class="${i<Math.round(pct/100*80)?'filled':''}"></span>`).join('');
+ const macroSum=t.protein*4+t.carbs*4+t.fat*9||1,carbPct=t.carbs*4/macroSum*100,fatPct=t.fat*9/macroSum*100,proteinPct=t.protein*4/macroSum*100;
+ $('macroPie').style.background=`conic-gradient(#3289c7 0 ${carbPct}%,#d69b35 ${carbPct}% ${carbPct+fatPct}%,#ed837c ${carbPct+fatPct}% 100%)`;
  $('mealCards').innerHTML=MEALS.map(m=>{
   const items=dayMeals(date).filter(x=>x.meal===m);
   return `<div class="food-meal"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${m}</strong><span class="pill">${Math.round(items.reduce((s,x)=>s+x.kcal,0))} kcal</span></div>
