@@ -1,0 +1,19 @@
+{
+  "name": "Mi Control de Peso",
+  "short_name": "Mi Peso",
+  "description": "Registro diario, histórico, objetivos y gráfica de evolución del peso.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f7",
+  "theme_color": "#142b3d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

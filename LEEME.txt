@@ -1,0 +1,31 @@
+# Mi Control de Peso
+
+Aplicación web instalable (PWA) para Android y otros dispositivos.
+
+## Incluye
+- **Control diario** como primera pestaña: registro del peso en kg, fecha automática, comparación con el registro anterior y los últimos 7 registros.
+- **Inicio**: resumen, objetivo, porcentaje de progreso, kilos perdidos, kilos restantes y fecha estimada.
+- **Gráfica**: evolución por año, mes o últimos siete días.
+- Histórico completo con scroll.
+- Verde para bajadas y rojo para subidas.
+- Edición automática del registro del día si se vuelve a guardar un peso en la misma fecha.
+
+## Almacenamiento
+Esta versión guarda los datos en el almacenamiento local del navegador/dispositivo (localStorage). No sincroniza entre móviles ni realiza copias en la nube. Usa la función de copia de seguridad del navegador o exporta los datos antes de cambiar de dispositivo. La sincronización multiusuario requiere configurar una base de datos y autenticación (por ejemplo, Supabase).
+
+## Instalar en Android
+1. Publica el contenido de esta carpeta en un sitio con HTTPS, por ejemplo GitHub Pages.
+2. Abre la dirección publicada en Chrome desde el móvil.
+3. Pulsa el menú ⋮ y selecciona **Instalar aplicación** o **Añadir a pantalla de inicio**.
+4. Confirma. Aparecerá el icono **Mi Peso** y se abrirá como aplicación.
+
+> No se puede instalar directamente desde el ZIP. Primero hay que alojarlo en HTTPS.
+
+## Publicar en GitHub Pages
+1. Crea un repositorio nuevo en GitHub.
+2. Sube `index.html`, `manifest.webmanifest`, `sw.js` e `icon.svg` a la raíz.
+3. En Settings → Pages, activa la publicación desde la rama principal (`main`) y carpeta raíz.
+4. Abre la URL de GitHub Pages en Chrome Android e instálala.
+
+## Aviso sobre la fecha prevista
+La estimación se muestra solo cuando existen al menos cinco registros en los últimos 28 días y la tendencia observada apunta hacia el objetivo. Es una proyección matemática orientativa, no una garantía ni una recomendación médica.
