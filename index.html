@@ -210,6 +210,7 @@ let foods=load(FOODKEY,[
 {name:'Yogur natural 0%',kcal:45,carbs:5,fat:0.2,protein:4.5}
 ]);
 let meals=load(MEALKEY,{}), macroGoals=load(MACROKEY,{protein:190,carbs:125,fat:55,kcal:1800});
+foods=foods.map((f,i)=>({...f,id:f.id||('food-'+i),baseGrams:Number(f.baseGrams)||100}));save(FOODKEY,foods);
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function isoToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -283,33 +284,81 @@ function renderFood(){
  $('mealCards').innerHTML=MEALS.map(m=>{
   const items=dayMeals(date).filter(x=>x.meal===m);
   return `<div class="food-meal"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${m}</strong><span class="pill">${Math.round(items.reduce((s,x)=>s+x.kcal,0))} kcal</span></div>
-  ${items.length?items.map(x=>`<div class="food-line"><span>${escapeHtml(x.name)} · ${x.grams} g<br><span class="mini-muted">${Math.round(x.kcal)} kcal · P ${x.protein.toFixed(1)} · H ${x.carbs.toFixed(1)} · G ${x.fat.toFixed(1)}</span></span><button class="delete-food btn-secondary" data-id="${x.id}" style="border:0;border-radius:9px;padding:6px 10px;color:#b8323b">🗑</button></div>`).join(''):'<div class="mini-muted" style="padding:12px 0">Todavía no has añadido alimentos.</div>'}
+  ${items.length?items.map(x=>`<div class="food-line"><span>${escapeHtml(x.name)} · ${x.grams} g<br><span class="mini-muted">${Math.round(x.kcal)} kcal · P ${x.protein.toFixed(1)} · H ${x.carbs.toFixed(1)} · G ${x.fat.toFixed(1)}</span></span><span style="display:flex;gap:5px"><button class="edit-meal-food btn-secondary" data-id="${x.id}" style="border:0;border-radius:9px;padding:6px 9px">✎</button><button class="delete-food btn-secondary" data-id="${x.id}" style="border:0;border-radius:9px;padding:6px 10px;color:#b8323b">🗑</button></span></div>`).join(''):'<div class="mini-muted" style="padding:12px 0">Todavía no has añadido alimentos.</div>'}
   <button class="btn btn-secondary" style="width:100%;margin-top:10px" data-add-meal="${m}">＋ Añadir alimento</button></div>`;
  }).join('');
  $('macroBars').innerHTML=[['Proteínas',t.protein,macroGoals.protein,'#16834b','protein'],['Hidratos',t.carbs,macroGoals.carbs,'#3289c7','carbs'],['Grasas',t.fat,macroGoals.fat,'#d69b35','fat']].map(([n,v,g,c])=>`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><strong>${n}</strong><span>${v.toFixed(1)} / ${g} g</span></div><div class="macrobar"><span style="width:${Math.min(100,v/(g||1)*100)}%;background:${c}"></span></div></div>`).join('');
  $('goalProtein').value=macroGoals.protein;$('goalCarbs').value=macroGoals.carbs;$('goalFat').value=macroGoals.fat;
- $('foodLibrary').innerHTML=foods.map(f=>`<div class="food-line"><span><strong>${escapeHtml(f.name)}</strong><br><span class="mini-muted">${f.kcal} kcal · P ${f.protein} · H ${f.carbs} · G ${f.fat} por 100 g</span></span></div>`).join('');
+ $('foodLibrary').innerHTML=foods.map(f=>`<div class="food-line"><span><strong>${escapeHtml(f.name)}</strong><br><span class="mini-muted">${f.kcal} kcal · P ${f.protein} g · H ${f.carbs} g · G ${f.fat} g por ${f.baseGrams||100} g</span></span><button class="edit-library-food btn-secondary" data-food-id="${f.id}" style="border:0;border-radius:9px;padding:6px 10px">✎ Editar</button></div>`).join('');
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function openFoodForm(meal){
  const opts=foods.map((f,i)=>`<option value="${i}">${escapeHtml(f.name)}</option>`).join('');
  const panel=document.createElement('div');panel.className='card';panel.id='foodAdder';
- panel.innerHTML=`<h3 style="margin:0 0 12px">Añadir a ${meal}</h3><div class="field"><label>Alimento</label><select id="pickFood" style="width:100%;padding:12px;border:1px solid #dfe7eb;border-radius:11px">${opts}<option value="new">＋ Crear alimento nuevo</option></select></div><div class="field" style="margin-top:10px"><label>Cantidad (gramos)</label><input id="pickGrams" type="number" min="0.1" step="0.1" value="100"></div><div id="newFoodFields" class="hidden" style="margin-top:12px"><div class="field"><label>Nombre del alimento</label><input id="newFoodName" placeholder="Ej. Queso fresco batido"></div><div class="formgrid" style="margin-top:8px">${[['newKcal','Calorías kcal'],['newCarbs','Hidratos g'],['newFat','Grasas g'],['newProtein','Proteínas g']].map(([id,l])=>`<div class="field"><label>${l} por 100 g</label><input id="${id}" type="number" min="0" step="0.1" value="0"></div>`).join('')}</div></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" id="confirmFood" style="flex:1">Añadir</button><button class="btn btn-secondary" id="cancelFood">Cancelar</button></div><div class="notice" id="foodAdderNotice"></div>`;
+ panel.innerHTML=`<h3 style="margin:0 0 12px">Añadir a ${meal}</h3>
+ <div class="field"><label>Alimento</label><select id="pickFood" style="width:100%;padding:12px;border:1px solid #dfe7eb;border-radius:11px">${opts}<option value="new">＋ Crear alimento nuevo</option></select></div>
+ <div class="field" style="margin-top:10px"><label>Cantidad que has consumido (gramos)</label><input id="pickGrams" type="number" min="0.1" step="0.1" value="100"></div>
+ <div id="newFoodFields" class="hidden" style="margin-top:12px">
+ <h4 style="margin:0 0 8px">Datos del alimento</h4>
+ <div class="field"><label>Nombre del alimento</label><input id="newFoodName" placeholder="Ej. Queso fresco batido"></div>
+ <div class="field" style="margin-top:8px"><label>¿A qué cantidad corresponden estos valores? (gramos)</label><input id="newBaseGrams" type="number" min="0.1" step="0.1" value="100"></div>
+ <p class="mini-muted">Introduce los valores nutricionales para esa cantidad. Puede ser 30, 40, 50, 100 g o la cantidad que indique tu envase.</p>
+ <div class="formgrid" style="margin-top:8px">${[['newKcal','Calorías kcal'],['newCarbs','Hidratos g'],['newFat','Grasas g'],['newProtein','Proteínas g']].map(([id,l])=>`<div class="field"><label>${l}</label><input id="${id}" type="number" min="0" step="0.1" value="0"></div>`).join('')}</div></div>
+ <div id="foodCalcPreview" class="mini-muted" style="margin-top:10px">Selecciona el alimento e indica los gramos que has consumido.</div>
+ <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" id="confirmFood" style="flex:1">Añadir</button><button class="btn btn-secondary" id="cancelFood">Cancelar</button></div><div class="notice" id="foodAdderNotice"></div>`;
  $('mealCards').prepend(panel);panel.scrollIntoView({behavior:'smooth',block:'center'});
- $('pickFood').addEventListener('change',()=> $('newFoodFields').classList.toggle('hidden',$('pickFood').value!=='new'));
- $('cancelFood').onclick=()=>panel.remove();
+ const updatePreview=()=>{
+  const isNew=$('pickFood').value==='new';$('newFoodFields').classList.toggle('hidden',!isNew);
+  let f=isNew?{name:$('newFoodName').value,baseGrams:Number($('newBaseGrams').value),kcal:Number($('newKcal').value),carbs:Number($('newCarbs').value),fat:Number($('newFat').value),protein:Number($('newProtein').value)}:foods[Number($('pickFood').value)];
+  const grams=Number($('pickGrams').value),base=Number(f?.baseGrams)||100,factor=grams/base;
+  $('foodCalcPreview').textContent=f&&grams>0?`${f.name||'Alimento'} · Para ${grams} g: ${(f.kcal*factor).toFixed(1)} kcal · P ${(f.protein*factor).toFixed(1)} g · H ${(f.carbs*factor).toFixed(1)} g · G ${(f.fat*factor).toFixed(1)} g`:'Introduce una cantidad válida.';
+ };
+ $('pickFood').addEventListener('change',updatePreview);$('pickGrams').addEventListener('input',updatePreview);
+ ['newBaseGrams','newKcal','newCarbs','newFat','newProtein','newFoodName'].forEach(id=>$(id).addEventListener('input',updatePreview));
+ $('cancelFood').onclick=()=>panel.remove();updatePreview();
  $('confirmFood').onclick=()=>{
   let f;
   if($('pickFood').value==='new'){
-   const name=$('newFoodName').value.trim();if(!name){$('foodAdderNotice').textContent='Escribe el nombre del alimento.';return}
-   f={name,kcal:+$('newKcal').value,carbs:+$('newCarbs').value,fat:+$('newFat').value,protein:+$('newProtein').value};
-   if([f.kcal,f.carbs,f.fat,f.protein].some(v=>!Number.isFinite(v)||v<0))return;
+   const name=$('newFoodName').value.trim(),baseGrams=Number($('newBaseGrams').value);
+   if(!name){$('foodAdderNotice').textContent='Escribe el nombre del alimento.';return}
+   if(!Number.isFinite(baseGrams)||baseGrams<=0){$('foodAdderNotice').textContent='Indica la cantidad de referencia en gramos.';return}
+   f={id:'food-'+Date.now().toString()+Math.random().toString(16).slice(2),name,baseGrams,kcal:Number($('newKcal').value),carbs:Number($('newCarbs').value),fat:Number($('newFat').value),protein:Number($('newProtein').value)};
+   if([f.kcal,f.carbs,f.fat,f.protein].some(v=>!Number.isFinite(v)||v<0)){$('foodAdderNotice').textContent='Revisa los valores nutricionales.';return}
    foods.push(f);save(FOODKEY,foods);
   }else f=foods[Number($('pickFood').value)];
-  const grams=Number($('pickGrams').value);if(!grams||grams<=0){$('foodAdderNotice').textContent='Introduce una cantidad válida.';return}
-  const factor=grams/100;(meals[currentFoodDate()]??=[]).push({id:Date.now().toString()+Math.random().toString(16).slice(2),meal,name:f.name,grams,kcal:f.kcal*factor,carbs:f.carbs*factor,fat:f.fat*factor,protein:f.protein*factor});
+  const grams=Number($('pickGrams').value);if(!Number.isFinite(grams)||grams<=0){$('foodAdderNotice').textContent='Introduce una cantidad consumida válida.';return}
+  const factor=grams/(Number(f.baseGrams)||100);(meals[currentFoodDate()]??=[]).push({id:Date.now().toString()+Math.random().toString(16).slice(2),foodId:f.id,meal,name:f.name,grams,kcal:f.kcal*factor,carbs:f.carbs*factor,fat:f.fat*factor,protein:f.protein*factor});
   saveMeals();renderFood();$('foodAdder')?.remove();
  };
+}
+function openLibraryFoodEditor(foodId){
+ const f=foods.find(x=>x.id===foodId);if(!f)return;
+ const panel=document.createElement('div');panel.className='card';panel.id='foodEditor';
+ panel.innerHTML=`<h3 style="margin:0 0 12px">Editar alimento</h3><div class="field"><label>Nombre del alimento</label><input id="editFoodName" value="${escapeHtml(f.name)}"></div>
+ <div class="field" style="margin-top:8px"><label>Estos valores nutricionales corresponden a (gramos)</label><input id="editFoodBaseGrams" type="number" min="0.1" step="0.1" value="${Number(f.baseGrams)||100}"></div>
+ <div class="formgrid" style="margin-top:8px">${[['editFoodKcal','Calorías kcal',f.kcal],['editFoodCarbs','Hidratos g',f.carbs],['editFoodFat','Grasas g',f.fat],['editFoodProtein','Proteínas g',f.protein]].map(([id,l,v])=>`<div class="field"><label>${l}</label><input id="${id}" type="number" min="0" step="0.1" value="${v}"></div>`).join('')}</div>
+ <p class="mini-muted">Puedes usar cualquier cantidad de referencia: 30, 40, 50, 100 g, etc. Las comidas registradas se recalcularán proporcionalmente conservando los gramos consumidos.</p>
+ <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" id="saveFoodEdit" style="flex:1">Guardar cambios</button><button class="btn btn-secondary" id="cancelFoodEdit">Cancelar</button></div><div class="notice" id="foodEditNotice"></div>`;
+ $('foodLibrary').prepend(panel);panel.scrollIntoView({behavior:'smooth',block:'center'});
+ $('cancelFoodEdit').onclick=()=>panel.remove();
+ $('saveFoodEdit').onclick=()=>{
+  const name=$('editFoodName').value.trim(),baseGrams=Number($('editFoodBaseGrams').value);
+  if(!name){$('foodEditNotice').textContent='Escribe el nombre del alimento.';return}
+  if(!Number.isFinite(baseGrams)||baseGrams<=0){$('foodEditNotice').textContent='Introduce una cantidad de referencia válida.';return}
+  const vals={kcal:Number($('editFoodKcal').value),carbs:Number($('editFoodCarbs').value),fat:Number($('editFoodFat').value),protein:Number($('editFoodProtein').value)};
+  if(Object.values(vals).some(v=>!Number.isFinite(v)||v<0)){$('foodEditNotice').textContent='Introduce valores válidos, iguales o superiores a cero.';return}
+  const oldName=f.name;Object.assign(f,{name,baseGrams,...vals});
+  Object.keys(meals).forEach(date=>{meals[date].forEach(item=>{if(item.foodId===foodId||(!item.foodId&&item.name===oldName)){item.foodId=foodId;item.name=f.name;const factor=Number(item.grams)/(Number(f.baseGrams)||100);item.kcal=f.kcal*factor;item.carbs=f.carbs*factor;item.fat=f.fat*factor;item.protein=f.protein*factor;}})});
+  save(FOODKEY,foods);saveMeals();renderFood();panel.remove();
+ };
+}
+function openMealFoodEditor(itemId){
+ const item=dayMeals().find(x=>x.id===itemId);if(!item)return;
+ const f=foods.find(x=>x.id===item.foodId)||foods.find(x=>x.name===item.name);
+ if(!f){alert('Este registro no está vinculado a un alimento de la biblioteca.');return}
+ const grams=prompt(`Cantidad de ${f.name} en gramos:`,String(item.grams));if(grams===null)return;
+ const n=Number(String(grams).replace(',','.'));if(!Number.isFinite(n)||n<=0){alert('Introduce una cantidad válida.');return}
+ const factor=n/(Number(f.baseGrams)||100);item.foodId=f.id;item.name=f.name;item.grams=n;item.kcal=f.kcal*factor;item.carbs=f.carbs*factor;item.fat=f.fat*factor;item.protein=f.protein*factor;saveMeals();renderFood();
 }
 function renderRelation(){
  const dates=Object.keys(meals).sort(), rows=[];
@@ -337,7 +386,8 @@ $('monthPicker').value=isoToday().slice(0,7);$('monthPicker').addEventListener('
 
 $('foodDate').value=isoToday();$('foodTarget').value=macroGoals.kcal;
 $('foodDate').addEventListener('change',renderFood);$('foodTarget').addEventListener('change',()=>{macroGoals.kcal=Number($('foodTarget').value)||1800;save(MACROKEY,macroGoals);renderFood()});
-$('mealCards').addEventListener('click',e=>{const add=e.target.closest('[data-add-meal]');if(add){openFoodForm(add.dataset.addMeal);return}const del=e.target.closest('.delete-food');if(del&&confirm('¿Eliminar este alimento del diario?')){const id=del.dataset.id;meals[currentFoodDate()]=dayMeals().filter(x=>x.id!==id);saveMeals();renderFood()}});
+$('mealCards').addEventListener('click',e=>{const add=e.target.closest('[data-add-meal]');if(add){openFoodForm(add.dataset.addMeal);return}const edit=e.target.closest('.edit-meal-food');if(edit){openMealFoodEditor(edit.dataset.id);return}const del=e.target.closest('.delete-food');if(del&&confirm('¿Eliminar este alimento del diario?')){const id=del.dataset.id;meals[currentFoodDate()]=dayMeals().filter(x=>x.id!==id);saveMeals();renderFood()}});
+$('foodLibrary').addEventListener('click',e=>{const edit=e.target.closest('.edit-library-food');if(edit)openLibraryFoodEditor(edit.dataset.foodId)});
 $('saveMacroGoals').addEventListener('click',()=>{macroGoals={...macroGoals,protein:Number($('goalProtein').value)||0,carbs:Number($('goalCarbs').value)||0,fat:Number($('goalFat').value)||0};save(MACROKEY,macroGoals);$('macroNotice').textContent='Objetivos de macros guardados.';renderFood()});
 const originalSwitchTab=switchTab;
 switchTab=function(name){originalSwitchTab(name);if(name==='diario'||name==='macros')renderFood();if(name==='relacion')renderRelation()};
