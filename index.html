@@ -60,6 +60,24 @@ h2{letter-spacing:-.7px;font-weight:820}
 .history-row:not(.swiped) .delete-record{visibility:hidden}
 .history-row.swiped .delete-record{visibility:visible}
 
+
+.tabs{grid-template-columns:repeat(6,minmax(0,1fr));overflow-x:auto}
+.tab{min-width:78px;font-size:10px;padding:8px 3px}
+.bottom{grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding-left:5px;padding-right:5px}
+.bottom button{font-size:9px;white-space:nowrap;padding:5px 1px}
+.bottom button b{font-size:17px}
+.food-meal{background:#fff;border:1px solid #e5ebef;border-radius:17px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.food-line{display:grid;grid-template-columns:1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.food-line:last-child{border-bottom:0}
+.macrobar{height:10px;border-radius:99px;background:#e9eef0;overflow:hidden}
+.macrobar span{display:block;height:100%;border-radius:99px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.formgrid .field input,.food-meal select,.food-meal input{width:100%;border:1px solid #dfe7eb;border-radius:11px;padding:11px;font-size:14px;background:white}
+.food-total{background:linear-gradient(135deg,#173b39,#23604e);color:white;border-radius:18px;padding:16px;margin-bottom:14px}
+.food-total .big{font-size:30px;font-weight:850}
+.mini-muted{font-size:11px;color:var(--muted)}
+@media(max-width:370px){.tab{min-width:70px}.bottom button{font-size:8px}}
+
 </style>
 </head>
 <body>
@@ -69,6 +87,9 @@ h2{letter-spacing:-.7px;font-weight:820}
 <button class="tab active" data-tab="control"><span>⚖️</span>Control diario</button>
 <button class="tab" data-tab="inicio"><span>◎</span>Objetivos</button>
 <button class="tab" data-tab="grafica"><span>▥</span>Gráfica</button>
+<button class="tab" data-tab="diario"><span>🍽️</span>Diario</button>
+<button class="tab" data-tab="macros"><span>◉</span>Macros</button>
+<button class="tab" data-tab="relacion"><span>↗</span>Relación</button>
 </nav>
 <section id="control">
 <h2>Control diario</h2><p class="sub" id="todayLabel">REGISTRO DE PESO AL LEVANTARTE</p>
@@ -129,17 +150,66 @@ h2{letter-spacing:-.7px;font-weight:820}
 <div class="stat"><label>Variación total</label><strong id="chartDelta">—</strong><small>kg</small></div>
 </div>
 </section>
-<footer>Los datos se guardan en este dispositivo. Haz copias de seguridad periódicas.</footer>
+
+<section id="diario" class="hidden">
+<h2>Diario de alimentación</h2><p class="sub" id="foodDateLabel">REGISTRO DE COMIDAS DEL DÍA</p>
+<div class="food-total">
+<div class="eyebrow" style="color:#c4dfd1">CALORÍAS CONSUMIDAS</div>
+<div class="big"><span id="dayKcal">0</span> <span style="font-size:14px;font-weight:600">kcal</span></div>
+<div class="mini-muted" style="color:#d1e4dc">Objetivo: <span id="foodGoalKcal">1800</span> kcal · Restantes: <span id="foodRemaining">1800</span> kcal</div>
+<div class="macrobar" style="margin-top:12px;background:#ffffff35"><span id="kcalBar" style="width:0%;background:#72d6a0"></span></div>
+</div>
+<div class="formgrid" style="margin-bottom:14px">
+<div class="field"><label for="foodDate">Fecha del diario</label><input id="foodDate" type="date"></div>
+<div class="field"><label for="foodTarget">Objetivo kcal</label><input id="foodTarget" type="number" min="500" max="6000" value="1800"></div>
+</div>
+<div id="mealCards"></div>
+</section>
+<section id="macros" class="hidden">
+<h2>Mis macronutrientes</h2><p class="sub">RESUMEN NUTRICIONAL DEL DÍA SELECCIONADO</p>
+<div class="card"><div class="eyebrow">CALORÍAS TOTALES</div><div style="font-size:34px;font-weight:850;color:var(--navy);margin:5px 0"><span id="macroKcal">0</span> kcal</div><div class="mini-muted">Objetivo diario: <span id="macroTarget">1800</span> kcal</div></div>
+<div class="card" id="macroBars"></div>
+<div class="card"><h3 style="font-size:15px;margin:0 0 8px">Objetivos de macros</h3><div class="formgrid">
+<div class="field"><label for="goalProtein">Proteínas (g)</label><input id="goalProtein" type="number" value="190"></div>
+<div class="field"><label for="goalCarbs">Hidratos (g)</label><input id="goalCarbs" type="number" value="125"></div>
+<div class="field"><label for="goalFat">Grasas (g)</label><input id="goalFat" type="number" value="55"></div>
+</div><button class="btn btn-secondary" id="saveMacroGoals" style="width:100%;margin-top:12px">Guardar objetivos de macros</button><div class="notice" id="macroNotice"></div></div>
+<div class="card"><h3 style="font-size:15px;margin:0 0 8px">Biblioteca de alimentos</h3><div id="foodLibrary"></div></div>
+</section>
+<section id="relacion" class="hidden">
+<h2>Alimentación y peso</h2><p class="sub">CALORÍAS DE CADA DÍA FRENTE AL PESO DE LA MAÑANA SIGUIENTE</p>
+<div class="card"><div class="stats">
+<div class="stat"><label>Media kcal / día</label><strong id="avgCalories">—</strong><small>últimos 7 días</small></div>
+<div class="stat"><label>Último peso</label><strong id="relationWeight">—</strong><small>kg</small></div>
+<div class="stat"><label>Registros unidos</label><strong id="relationCount">0</strong><small>días</small></div>
+</div></div>
+<div class="card"><h3 style="font-size:15px;margin:0 0 10px">Comparación diaria</h3><div class="mini-muted" style="margin-bottom:8px">El peso corresponde a la mañana posterior al día de alimentación.</div><div id="relationTable"></div></div>
+<div class="card soft mini-muted">Las variaciones de un día a otro también dependen del agua, el glucógeno, la sal y el contenido digestivo. La comparación sirve para observar tendencias, no para atribuir automáticamente una subida o bajada a las calorías del día anterior.</div>
+</section>
+<footer>Los datos se guardan en este dispositivo en esta primera versión. La conexión a Supabase se añadirá después.</footer>
 </main>
 <nav class="bottom" aria-label="Navegación inferior">
 <button class="active" data-tab="control"><b>⚖️</b>Control diario</button>
 <button data-tab="inicio"><b>◎</b>Objetivos</button>
 <button data-tab="grafica"><b>▥</b>Gráfica</button>
+<button data-tab="diario"><b>🍽️</b>Diario</button>
+<button data-tab="macros"><b>◉</b>Macros</button>
+<button data-tab="relacion"><b>↗</b>Relación</button>
 </nav>
 <script>
 const $=id=>document.getElementById(id);
 const KEY='miControlPeso.records.v1', GOAL='miControlPeso.goal.v1';
 let records=load(KEY,[]), goal=load(GOAL,{start:'',target:''}), period='year';
+const MEALS=['Desayuno','Almuerzo','Cena','Tentempié'];
+const FOODKEY='miControlPeso.foods.v1', MEALKEY='miControlPeso.meals.v1', MACROKEY='miControlPeso.macroGoals.v1';
+let foods=load(FOODKEY,[
+{name:'Pechuga de pollo',kcal:165,carbs:0,fat:3.6,protein:31},
+{name:'Arroz cocido',kcal:130,carbs:28,fat:0.3,protein:2.7},
+{name:'Huevo',kcal:155,carbs:1.1,fat:11,protein:13},
+{name:'Avena',kcal:389,carbs:66.3,fat:6.9,protein:16.9},
+{name:'Yogur natural 0%',kcal:45,carbs:5,fat:0.2,protein:4.5}
+]);
+let meals=load(MEALKEY,{}), macroGoals=load(MACROKEY,{protein:190,carbs:125,fat:55,kcal:1800});
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function isoToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -198,6 +268,58 @@ function renderChart(){
  }
  const latest=ordered()[0];$('chartCurrent').textContent=latest?kg(latest.weight):'—';$('chartMin').textContent=list.length?kg(Math.min(...list.map(r=>r.weight))):'—';let first=list[0],last=list.at(-1);$('chartDelta').textContent=first&&last?signed(last.weight-first.weight):'—';
 }
+
+function currentFoodDate(){return $('foodDate')?.value||isoToday()}
+function dayMeals(date=currentFoodDate()){return meals[date]||[]}
+function totals(date=currentFoodDate()){
+ return dayMeals(date).reduce((a,x)=>{a.kcal+=x.kcal;a.protein+=x.protein;a.carbs+=x.carbs;a.fat+=x.fat;return a},{kcal:0,protein:0,carbs:0,fat:0});
+}
+function saveMeals(){save(MEALKEY,meals)}
+function renderFood(){
+ const date=currentFoodDate(),t=totals(date),target=Number($('foodTarget').value)||macroGoals.kcal;
+ $('foodDateLabel').textContent=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+ $('dayKcal').textContent=Math.round(t.kcal);$('foodGoalKcal').textContent=target;$('foodRemaining').textContent=Math.max(0,Math.round(target-t.kcal));$('kcalBar').style.width=Math.min(100,t.kcal/target*100)+'%';
+ $('macroKcal').textContent=Math.round(t.kcal);$('macroTarget').textContent=target;$('macroTarget').textContent=target;
+ $('mealCards').innerHTML=MEALS.map(m=>{
+  const items=dayMeals(date).filter(x=>x.meal===m);
+  return `<div class="food-meal"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${m}</strong><span class="pill">${Math.round(items.reduce((s,x)=>s+x.kcal,0))} kcal</span></div>
+  ${items.length?items.map(x=>`<div class="food-line"><span>${escapeHtml(x.name)} · ${x.grams} g<br><span class="mini-muted">${Math.round(x.kcal)} kcal · P ${x.protein.toFixed(1)} · H ${x.carbs.toFixed(1)} · G ${x.fat.toFixed(1)}</span></span><button class="delete-food btn-secondary" data-id="${x.id}" style="border:0;border-radius:9px;padding:6px 10px;color:#b8323b">🗑</button></div>`).join(''):'<div class="mini-muted" style="padding:12px 0">Todavía no has añadido alimentos.</div>'}
+  <button class="btn btn-secondary" style="width:100%;margin-top:10px" data-add-meal="${m}">＋ Añadir alimento</button></div>`;
+ }).join('');
+ $('macroBars').innerHTML=[['Proteínas',t.protein,macroGoals.protein,'#16834b','protein'],['Hidratos',t.carbs,macroGoals.carbs,'#3289c7','carbs'],['Grasas',t.fat,macroGoals.fat,'#d69b35','fat']].map(([n,v,g,c])=>`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><strong>${n}</strong><span>${v.toFixed(1)} / ${g} g</span></div><div class="macrobar"><span style="width:${Math.min(100,v/(g||1)*100)}%;background:${c}"></span></div></div>`).join('');
+ $('goalProtein').value=macroGoals.protein;$('goalCarbs').value=macroGoals.carbs;$('goalFat').value=macroGoals.fat;
+ $('foodLibrary').innerHTML=foods.map(f=>`<div class="food-line"><span><strong>${escapeHtml(f.name)}</strong><br><span class="mini-muted">${f.kcal} kcal · P ${f.protein} · H ${f.carbs} · G ${f.fat} por 100 g</span></span></div>`).join('');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openFoodForm(meal){
+ const opts=foods.map((f,i)=>`<option value="${i}">${escapeHtml(f.name)}</option>`).join('');
+ const panel=document.createElement('div');panel.className='card';panel.id='foodAdder';
+ panel.innerHTML=`<h3 style="margin:0 0 12px">Añadir a ${meal}</h3><div class="field"><label>Alimento</label><select id="pickFood" style="width:100%;padding:12px;border:1px solid #dfe7eb;border-radius:11px">${opts}<option value="new">＋ Crear alimento nuevo</option></select></div><div class="field" style="margin-top:10px"><label>Cantidad (gramos)</label><input id="pickGrams" type="number" min="0.1" step="0.1" value="100"></div><div id="newFoodFields" class="hidden" style="margin-top:12px"><div class="field"><label>Nombre del alimento</label><input id="newFoodName" placeholder="Ej. Queso fresco batido"></div><div class="formgrid" style="margin-top:8px">${[['newKcal','Calorías kcal'],['newCarbs','Hidratos g'],['newFat','Grasas g'],['newProtein','Proteínas g']].map(([id,l])=>`<div class="field"><label>${l} por 100 g</label><input id="${id}" type="number" min="0" step="0.1" value="0"></div>`).join('')}</div></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" id="confirmFood" style="flex:1">Añadir</button><button class="btn btn-secondary" id="cancelFood">Cancelar</button></div><div class="notice" id="foodAdderNotice"></div>`;
+ $('mealCards').prepend(panel);panel.scrollIntoView({behavior:'smooth',block:'center'});
+ $('pickFood').addEventListener('change',()=> $('newFoodFields').classList.toggle('hidden',$('pickFood').value!=='new'));
+ $('cancelFood').onclick=()=>panel.remove();
+ $('confirmFood').onclick=()=>{
+  let f;
+  if($('pickFood').value==='new'){
+   const name=$('newFoodName').value.trim();if(!name){$('foodAdderNotice').textContent='Escribe el nombre del alimento.';return}
+   f={name,kcal:+$('newKcal').value,carbs:+$('newCarbs').value,fat:+$('newFat').value,protein:+$('newProtein').value};
+   if([f.kcal,f.carbs,f.fat,f.protein].some(v=>!Number.isFinite(v)||v<0))return;
+   foods.push(f);save(FOODKEY,foods);
+  }else f=foods[Number($('pickFood').value)];
+  const grams=Number($('pickGrams').value);if(!grams||grams<=0){$('foodAdderNotice').textContent='Introduce una cantidad válida.';return}
+  const factor=grams/100;(meals[currentFoodDate()]??=[]).push({id:Date.now().toString()+Math.random().toString(16).slice(2),meal,name:f.name,grams,kcal:f.kcal*factor,carbs:f.carbs*factor,fat:f.fat*factor,protein:f.protein*factor});
+  saveMeals();renderFood();$('foodAdder')?.remove();
+ };
+}
+function renderRelation(){
+ const dates=Object.keys(meals).sort(), rows=[];
+ for(const date of dates){const next=new Date(date+'T12:00:00');next.setDate(next.getDate()+1);const nextISO=isoDate(next);const weight=records.find(r=>r.date===nextISO);const kcal=totals(date).kcal;rows.push({date,kcal,weight:weight?.weight,nextISO})}
+ const last=rows.slice(-7),avg=last.length?last.reduce((s,r)=>s+r.kcal,0)/last.length:0;
+ $('avgCalories').textContent=last.length?Math.round(avg):'—';const latest=ordered()[0];$('relationWeight').textContent=latest?kg(latest.weight):'—';$('relationCount').textContent=rows.filter(r=>r.weight!==undefined).length;
+ $('relationTable').innerHTML=rows.length?rows.reverse().map(r=>`<div class="food-line"><span><strong>${fmtDate(r.date,{day:'numeric',month:'short',year:'numeric'})}</strong><br><span class="mini-muted">${Math.round(r.kcal)} kcal consumidas</span></span><span style="text-align:right"><strong>${r.weight!==undefined?kg(r.weight)+' kg':'—'}</strong><br><span class="mini-muted">mañana siguiente</span></span></div>`).join(''):'<div class="empty">Cuando registres comidas y pesos, aparecerá aquí la comparación.</div>';
+}
+function isoDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+
 function render(){renderHistory();renderHome();renderChart()}
 function switchTab(name){document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.id!==name));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='grafica')renderChart();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
@@ -212,7 +334,15 @@ $('history').addEventListener('touchend',e=>{if(!activeSwipe)return;const dx=e.c
 $('history').addEventListener('click',e=>{const button=e.target.closest('.delete-record');if(!button)return;const row=button.closest('.history-row'),date=row.dataset.date;if(!confirm(`¿Estás seguro de que quieres eliminar el registro del ${fmtDate(date,{day:'numeric',month:'long',year:'numeric'})}?`))return;records=records.filter(r=>r.date!==date);save(KEY,records);render();});
 document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{period=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));renderChart()}));
 $('monthPicker').value=isoToday().slice(0,7);$('monthPicker').addEventListener('change',renderChart);window.addEventListener('resize',()=>{if(!$('grafica').classList.contains('hidden'))renderChart()});
+
+$('foodDate').value=isoToday();$('foodTarget').value=macroGoals.kcal;
+$('foodDate').addEventListener('change',renderFood);$('foodTarget').addEventListener('change',()=>{macroGoals.kcal=Number($('foodTarget').value)||1800;save(MACROKEY,macroGoals);renderFood()});
+$('mealCards').addEventListener('click',e=>{const add=e.target.closest('[data-add-meal]');if(add){openFoodForm(add.dataset.addMeal);return}const del=e.target.closest('.delete-food');if(del&&confirm('¿Eliminar este alimento del diario?')){const id=del.dataset.id;meals[currentFoodDate()]=dayMeals().filter(x=>x.id!==id);saveMeals();renderFood()}});
+$('saveMacroGoals').addEventListener('click',()=>{macroGoals={...macroGoals,protein:Number($('goalProtein').value)||0,carbs:Number($('goalCarbs').value)||0,fat:Number($('goalFat').value)||0};save(MACROKEY,macroGoals);$('macroNotice').textContent='Objetivos de macros guardados.';renderFood()});
+const originalSwitchTab=switchTab;
+switchTab=function(name){originalSwitchTab(name);if(name==='diario'||name==='macros')renderFood();if(name==='relacion')renderRelation()};
+renderFood();renderRelation();
 render();
-if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+if('serviceWorker'  in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 </script>
 </body></html>
