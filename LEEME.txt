@@ -1,0 +1,13 @@
+MI CONTROL DE PESO – ACTUALIZACIÓN
+
+Archivos para GitHub Pages:
+- index.html (archivo principal; debe conservar exactamente este nombre)
+- manifest.webmanifest
+- sw.js
+- icon.svg
+
+Funciones: histórico completo en Control diario; deslizar cada registro hacia la izquierda para mostrar la papelera roja; confirmación antes de borrar; fecha objetivo seleccionada manualmente en Objetivos; gráfica por año, mes y semana.
+
+Los registros se guardan en el almacenamiento local del navegador mediante localStorage. Esta actualización conserva las mismas claves de almacenamiento para no borrar los datos que ya existan en ese dispositivo.
+
+Para actualizar GitHub: subir estos cuatro archivos a la raíz del repositorio y confirmar los cambios. No borrar los datos del navegador ni desinstalar la aplicación.

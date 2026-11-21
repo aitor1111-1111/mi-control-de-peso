@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#142b3d">
+<meta name="description" content="Registra tu peso diario, consulta tu evolución y sigue tu objetivo.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Mi Control de Peso</title>
+<style>
+:root{--navy:#142b3d;--navy2:#203e53;--green:#16834b;--green-bg:#e7f5ec;--red:#c43d42;--red-bg:#fdebed;--ink:#172b3a;--muted:#71808b;--bg:#f3f6f7;--card:#fff;--line:#e7ecef;--shadow:0 8px 24px #1834480d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+header{background:linear-gradient(135deg,var(--navy),#24465b);color:#fff;padding:22px 18px 18px;border-radius:0 0 25px 25px}
+.headrow{display:flex;align-items:center;justify-content:space-between;max-width:720px;margin:auto}.brand{display:flex;gap:11px;align-items:center}.logo{width:43px;height:43px;border-radius:14px;background:#ffffff17;display:grid;place-items:center;font-size:23px}.brand h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.2px}.brand p{margin:3px 0 0;color:#c5d5df;font-size:12px}.unit{border:1px solid #ffffff40;border-radius:99px;padding:6px 11px;font-size:11px;font-weight:800;color:#d9f5e4}
+main{max-width:720px;margin:0 auto;padding:18px 15px 24px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#e8eef1;padding:5px;border-radius:16px;margin:0 0 19px}.tab{border:0;background:transparent;padding:11px 5px;border-radius:12px;color:#61727d;font-weight:750;font-size:12px;cursor:pointer}.tab.active{background:#fff;color:var(--navy);box-shadow:0 2px 8px #19384a12}.tab span{display:block;font-size:18px;margin-bottom:3px}
+h2{font-size:22px;margin:0 0 4px;letter-spacing:-.5px}.sub{color:var(--muted);font-size:12px;margin:0 0 17px}.card{background:var(--card);border-radius:20px;padding:17px;margin-bottom:13px;box-shadow:var(--shadow);border:1px solid #edf1f3}.card.soft{background:#f9fbfc}.eyebrow{font-size:10px;font-weight:850;letter-spacing:1px;color:var(--muted)}.weight-entry{display:flex;align-items:center;gap:10px;margin:8px 0 12px}.weight-entry input{width:100%;min-width:0;border:0;border-bottom:2px solid #dce5e9;background:transparent;font-size:39px;font-weight:800;color:var(--navy);outline:none;padding:3px 0}.weight-entry input:focus{border-color:var(--green)}.kg{font-size:19px;font-weight:800;color:#647681}.date-line{font-size:12px;color:var(--muted);margin:2px 0 14px}.btn{border:0;border-radius:13px;padding:13px 16px;font-size:14px;font-weight:800;cursor:pointer}.btn-primary{background:var(--green);color:white;width:100%;box-shadow:0 5px 12px #16834b26}.btn-secondary{background:#edf2f4;color:var(--navy)}.notice{font-size:12px;color:var(--muted);margin-top:9px;min-height:16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f4f7f8;border-radius:14px;padding:12px 10px;min-width:0}.stat label{display:block;color:var(--muted);font-size:10px;line-height:1.3;min-height:27px}.stat strong{display:block;font-size:20px;letter-spacing:-.5px;margin-top:4px}.stat small{font-size:10px;color:var(--muted)}.green{color:var(--green)!important}.red{color:var(--red)!important}.neutral{color:#71808b!important}.section-title{display:flex;justify-content:space-between;align-items:center;margin:18px 1px 10px}.section-title h3{font-size:15px;margin:0}.pill{font-size:10px;font-weight:800;background:#edf3f5;color:#5c707d;border-radius:99px;padding:6px 9px}
+.evolution{padding:0 2px}.evo-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);font-size:12px}.evo-row:last-child{border-bottom:0}.evo-date{color:var(--muted);font-size:14px;font-weight:700}.evo-weight{font-weight:800;font-size:13px}.evo-change{font-weight:800;min-width:65px;text-align:right}.scroll-history{max-height:330px;overflow:auto;padding-right:4px;overscroll-behavior:contain}.empty{color:var(--muted);text-align:center;padding:22px 8px;font-size:13px}
+.goal-top{display:flex;justify-content:space-between;align-items:center}.status{font-size:10px;font-weight:800;color:var(--green);background:var(--green-bg);border-radius:99px;padding:6px 9px}.goal-numbers{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.goal-number{background:#f4f7f8;border-radius:15px;padding:13px}.goal-number label{display:block;font-size:10px;color:var(--muted);font-weight:750}.goal-number strong{font-size:25px;display:block;margin-top:5px;color:var(--navy)}.progress-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;margin-bottom:8px}.progress{height:11px;background:#e8eef0;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:linear-gradient(90deg,#16834b,#5bc58a);border-radius:99px;transition:width .3s}.goal-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}.goal-foot .stat strong{font-size:18px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field label{display:block;font-size:11px;color:var(--muted);font-weight:750;margin-bottom:6px}.field input{width:100%;border:1px solid #dfe7eb;border-radius:11px;padding:11px;font-size:15px;font-weight:700;color:var(--navy);background:#fff}.chart-controls{display:flex;gap:6px;background:#edf2f4;padding:4px;border-radius:12px;margin-bottom:15px}.chart-controls button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:800;color:#667984}.chart-controls button.active{background:#fff;color:var(--navy);box-shadow:0 2px 5px #18344812}.chart-wrap{height:240px;position:relative}.chart-wrap canvas{width:100%;height:100%;display:block}.chart-note{font-size:11px;color:var(--muted);margin-top:8px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar .btn{flex:1}.hidden{display:none!important}.bottom{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(14px);border-top:1px solid #e7ecef;padding:9px 12px calc(9px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:6px;z-index:5}.bottom button{border:0;background:transparent;color:#73838d;font-size:10px;font-weight:750;padding:5px;border-radius:11px}.bottom button b{display:block;font-size:19px;margin-bottom:2px}.bottom button.active{color:var(--green);background:#eaf5ee}
+footer{text-align:center;color:#9aa6ad;font-size:10px;padding:12px}
+@media(min-width:600px){header{border-radius:0 0 30px 30px}.card{padding:20px}.evo-row{padding:9px 4px}}
+
+/* Visual refinement v2 */
+:root{--navy:#10283a;--navy2:#1d4056;--green:#137b49;--red:#bd343d;--bg:#f2f5f7;--line:#e4eaee;--shadow:0 10px 30px rgba(19,43,59,.075)}
+body{background:radial-gradient(ellipse at 15% 0%,#eaf2f4 0,transparent 38%),var(--bg);letter-spacing:.05px}
+header{background:linear-gradient(125deg,#102638 0%,#1b4055 58%,#245b58 100%);padding-top:25px;padding-bottom:21px;box-shadow:0 8px 24px rgba(16,40,56,.13)}
+.logo{background:linear-gradient(145deg,#ffffff25,#ffffff0b);border:1px solid #ffffff25;box-shadow:inset 0 1px 0 #ffffff22}
+.brand h1{letter-spacing:.55px;font-size:18px}
+main{padding-top:20px}
+.tabs{background:#e7edf0;border:1px solid #e0e8ec;box-shadow:inset 0 1px 2px #17384a0a}
+.tab{transition:background .18s,box-shadow .18s,color .18s}
+.tab.active{color:#116b43;box-shadow:0 3px 10px rgba(20,55,72,.10);background:linear-gradient(180deg,#fff,#f9fcfa)}
+.card{border:1px solid rgba(221,230,235,.9);box-shadow:0 8px 25px rgba(20,48,65,.055)}
+.card.soft,.stat,.goal-number{background:linear-gradient(145deg,#f8fafb,#f0f4f6)}
+h2{letter-spacing:-.7px;font-weight:820}
+.weight-entry input{font-variant-numeric:tabular-nums}
+.btn-primary{background:linear-gradient(105deg,#147b49,#20965b);box-shadow:0 7px 16px rgba(20,132,77,.2)}
+.btn-primary:active{transform:translateY(1px)}
+.evo-row{padding:9px 3px}
+.evo-date{font-size:13px;font-weight:650;color:#596d79}
+.evo-weight{font-variant-numeric:tabular-nums}
+.evo-change{font-variant-numeric:tabular-nums}
+.stat{border:1px solid #e8eef1}
+.goal-number{border:1px solid #e8eef1}
+.progress{background:#e6ecef;box-shadow:inset 0 1px 2px #15394a12}
+.progress>div{background:linear-gradient(90deg,#147a49,#52bd82)}
+.field input{transition:border-color .15s,box-shadow .15s}
+.field input:focus{outline:none;border-color:#16834b;box-shadow:0 0 0 3px #16834b18}
+.bottom{box-shadow:0 -5px 20px rgba(20,48,65,.045)}
+.bottom button.active{color:#117447;background:#e8f4ed}
+
+
+/* Histórico: gesto de deslizamiento para eliminar */
+.history-row{position:relative;overflow:hidden;border-bottom:1px solid var(--line);border-radius:9px;touch-action:pan-y}
+.history-row:last-child{border-bottom:0}
+.history-row-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 8px;background:#fff;transition:transform .2s ease}
+.history-row.swiped .history-row-inner{transform:translateX(-76px)}
+.delete-record{position:absolute;right:0;top:0;bottom:0;width:76px;border:0;background:#c43d42;color:#fff;font-size:20px;font-weight:800;display:grid;place-items:center;cursor:pointer}
+.delete-record:active{background:#a92c34}
+.history-row:not(.swiped) .delete-record{visibility:hidden}
+.history-row.swiped .delete-record{visibility:visible}
+
+</style>
+</head>
+<body>
+<header><div class="headrow"><div class="brand"><div class="logo">⚖️</div><div><h1>MI CONTROL DE PESO</h1><p>Tu progreso, día a día</p></div></div><div class="unit">KG</div></div></header>
+<main>
+<nav class="tabs" aria-label="Secciones">
+<button class="tab active" data-tab="control"><span>⚖️</span>Control diario</button>
+<button class="tab" data-tab="inicio"><span>◎</span>Objetivos</button>
+<button class="tab" data-tab="grafica"><span>▥</span>Gráfica</button>
+</nav>
+<section id="control">
+<h2>Control diario</h2><p class="sub" id="todayLabel">REGISTRO DE PESO AL LEVANTARTE</p>
+<div class="card">
+<div class="eyebrow">¿CUÁNTO PESAS HOY?</div>
+<div class="weight-entry"><input id="weightInput" type="number" inputmode="decimal" min="1" max="500" step="0.1" placeholder="82,4" aria-label="Peso en kilogramos"><span class="kg">kg</span></div>
+<div class="date-line" id="entryDate"></div>
+<button class="btn btn-primary" id="saveWeight">＋ Guardar peso</button><div class="notice" id="saveNotice" aria-live="polite"></div>
+</div>
+<div class="section-title"><h3>Histórico de registros</h3><span class="pill" id="recordCount">0 registros</span></div>
+<div class="card scroll-history" id="history"><div class="empty">Tu histórico aparecerá aquí.</div></div>
+</section>
+<section id="inicio" class="hidden">
+<h2>Tus objetivos</h2><p class="sub">TU PROGRESO Y LA META QUE QUIERES ALCANZAR</p>
+<div class="card" style="background:linear-gradient(135deg,#183b35,#245b49);color:white">
+<div class="eyebrow" style="color:#c4dfd1">PESO ACTUAL</div><div style="font-size:42px;font-weight:850;letter-spacing:-1.5px;margin:4px 0" id="currentWeight">— kg</div><div id="dailyChange" style="font-size:12px;color:#d5f5e2">Añade tu primer registro</div>
+</div>
+<div class="stats" style="margin-bottom:14px">
+<div class="stat"><label>Peso inicial</label><strong id="initialWeight">—</strong><small>kg</small></div>
+<div class="stat"><label>Registros</label><strong id="totalRecords">0</strong><small>en total</small></div>
+<div class="stat"><label>Variación total</label><strong id="totalChange">—</strong><small>kg</small></div>
+</div>
+<div class="card">
+<div class="goal-top"><h3 style="margin:0;font-size:16px">🎯 Mi objetivo</h3><span class="status" id="goalStatus">Por configurar</span></div>
+<div class="goal-numbers">
+<div class="goal-number"><label>PESO ACTUAL</label><strong id="goalCurrent">— kg</strong></div>
+<div class="goal-number"><label>PESO OBJETIVO</label><strong id="goalTargetDisplay">— kg</strong></div>
+</div>
+<div class="progress-head"><span>Progreso conseguido</span><strong class="green" id="goalPercent">— %</strong></div>
+<div class="progress"><div id="goalBar" style="width:0%"></div></div>
+<div class="goal-foot">
+<div class="stat"><label>Peso perdido</label><strong class="green" id="lostWeight">—</strong><small>kg</small></div>
+<div class="stat"><label>Me faltan</label><strong id="remainingWeight">—</strong><small>kg</small></div>
+<div class="stat"><label>Fecha prevista</label><strong id="targetDate" style="font-size:14px">—</strong><small>fecha elegida</small></div>
+</div>
+</div>
+<div class="card">
+<h3 style="font-size:15px;margin:0 0 13px">Configura tu objetivo</h3>
+<div class="settings">
+<div class="field"><label for="startWeight">Peso inicial (kg)</label><input id="startWeight" type="number" min="1" max="500" step=".1" placeholder="Ej. 89"></div>
+<div class="field"><label for="targetWeight">Peso objetivo (kg)</label><input id="targetWeight" type="number" min="1" max="500" step=".1" placeholder="Ej. 82"></div>
+<div class="field" style="grid-column:1/-1"><label for="goalDate">Fecha prevista para cumplir el objetivo</label><input id="goalDate" type="date"></div>
+</div>
+<button class="btn btn-secondary" id="saveGoal" style="width:100%;margin-top:12px">Guardar objetivo</button><div class="notice" id="goalNotice"></div>
+</div>
+</section>
+<section id="grafica" class="hidden">
+<h2>Evolución del peso</h2><p class="sub">CONSULTA TU PROGRESO POR AÑO, MES O SEMANA</p>
+<div class="card">
+<div class="chart-controls"><button class="active" data-period="year">Año</button><button data-period="month">Mes</button><button data-period="week">Semana</button></div>
+<div class="field" id="monthPickerWrap" style="margin-bottom:12px"><label for="monthPicker">Mes que quieres consultar</label><input type="month" id="monthPicker"></div>
+<div class="chart-wrap"><canvas id="weightChart" aria-label="Gráfica de evolución del peso"></canvas></div>
+<div class="chart-note" id="chartSummary">Registra tus pesos para generar la gráfica.</div>
+</div>
+<div class="stats">
+<div class="stat"><label>Peso más reciente</label><strong id="chartCurrent">—</strong><small>kg</small></div>
+<div class="stat"><label>Peso mínimo</label><strong id="chartMin">—</strong><small>kg</small></div>
+<div class="stat"><label>Variación total</label><strong id="chartDelta">—</strong><small>kg</small></div>
+</div>
+</section>
+<footer>Los datos se guardan en este dispositivo. Haz copias de seguridad periódicas.</footer>
+</main>
+<nav class="bottom" aria-label="Navegación inferior">
+<button class="active" data-tab="control"><b>⚖️</b>Control diario</button>
+<button data-tab="inicio"><b>◎</b>Objetivos</button>
+<button data-tab="grafica"><b>▥</b>Gráfica</button>
+</nav>
+<script>
+const $=id=>document.getElementById(id);
+const KEY='miControlPeso.records.v1', GOAL='miControlPeso.goal.v1';
+let records=load(KEY,[]), goal=load(GOAL,{start:'',target:''}), period='year';
+function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function isoToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmtDate(s,opts={day:'2-digit',month:'2-digit',year:'numeric'}){return new Date(s+'T12:00:00').toLocaleDateString('es-ES',opts)}
+function kg(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:1,maximumFractionDigits:1})}
+function signed(n){return (n>0?'+':n<0?'−':'')+kg(Math.abs(n))}
+function ordered(){return [...records].sort((a,b)=>b.date.localeCompare(a.date))}
+function deltaClass(n){return n<0?'green':n>0?'red':'neutral'}
+function deltaText(n){return n<0?'▼ '+kg(Math.abs(n))+' kg':n>0?'▲ '+kg(n)+' kg':'＝ 0,0 kg'}
+function renderHistory(){
+ const list=ordered();
+ $('history').innerHTML=list.length?list.map((r,i)=>{
+  let prev=list[i+1],d=prev?r.weight-prev.weight:null;
+  return `<div class="history-row" data-date="${r.date}">
+   <button class="delete-record" type="button" aria-label="Eliminar registro" title="Eliminar">🗑</button>
+   <div class="history-row-inner"><span class="evo-date">${fmtDate(r.date,{day:'numeric',month:'long',year:'numeric'})}</span><span class="evo-weight">${kg(r.weight)} kg</span><span class="evo-change ${d===null?'neutral':deltaClass(d)}">${d===null?'—':deltaText(d)}</span></div>
+  </div>`;
+ }).join(''):'<div class="empty">Tu histórico aparecerá aquí.</div>';
+ $('recordCount').textContent=list.length+' registros';
+}
+function renderHome(){
+ const list=ordered(),latest=list[0],prev=list[1],initial=Number(goal.start)||list.at(-1)?.weight,target=Number(goal.target);
+ $('currentWeight').textContent=latest?kg(latest.weight)+' kg':'— kg';
+ $('dailyChange').textContent=latest&&prev?deltaText(latest.weight-prev.weight)+' respecto al registro anterior':latest?'Primer registro guardado':'Añade tu primer registro';
+ $('dailyChange').style.color=latest&&prev?(latest.weight-prev.weight<0?'#a8f0c3':latest.weight-prev.weight>0?'#ffb7b9':'#fff'):'#d5f5e2';
+ $('initialWeight').textContent=initial?kg(initial):'—';$('totalRecords').textContent=list.length;
+ const total=latest&&initial?latest.weight-initial:null;$('totalChange').textContent=total===null?'—':signed(total);$('totalChange').className=total===null?'':deltaClass(total);
+ $('goalCurrent').textContent=latest?kg(latest.weight)+' kg':'— kg';$('goalTargetDisplay').textContent=target?kg(target)+' kg':'— kg';
+ let pct=0,lost=null,remaining=null;
+ if(latest&&initial&&target&&initial!==target){lost=initial-latest.weight;remaining=Math.max(0,latest.weight-target);pct=Math.max(0,Math.min(100,(lost/(initial-target))*100))}
+ $('goalPercent').textContent=target&&initial?pct.toFixed(1).replace('.',',')+' %':'— %';$('goalBar').style.width=pct+'%';
+ $('lostWeight').textContent=lost===null?'—':signed(lost);$('lostWeight').className=lost!==null&&lost>=0?'green':lost!==null?'red':'';
+ $('remainingWeight').textContent=remaining===null?'—':kg(remaining);
+ $('targetDate').textContent=goal.date?fmtDate(goal.date,{day:'numeric',month:'long',year:'numeric'}):'—';
+ $('goalStatus').textContent=!target||!initial?'Por configurar':latest&&latest.weight<=target?'¡Objetivo alcanzado!':'En progreso';
+ $('startWeight').value=goal.start||'';$('targetWeight').value=goal.target||'';$('goalDate').value=goal.date||'';
+}
+function renderChart(){
+ const list=ordered().reverse(),canvas=$('weightChart'),ctx=canvas.getContext('2d'),wrap=canvas.parentElement,rect=wrap.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(300,rect.width)*dpr;canvas.height=rect.height*dpr;ctx.scale(dpr,dpr);const w=canvas.width/dpr,h=canvas.height/dpr;
+ ctx.clearRect(0,0,w,h);
+ let data=list;
+ if(period==='month'){const v=$('monthPicker').value||isoToday().slice(0,7);data=list.filter(r=>r.date.startsWith(v))}
+ if(period==='week'){const end=new Date(isoToday()+'T12:00:00'),start=new Date(end);start.setDate(end.getDate()-6);data=list.filter(r=>{let d=new Date(r.date+'T12:00:00');return d>=start&&d<=end})}
+ $('monthPickerWrap').classList.toggle('hidden',period!=='month');
+ if(!data.length){ctx.fillStyle='#71808b';ctx.font='13px system-ui';ctx.textAlign='center';ctx.fillText('No hay registros para este periodo',w/2,h/2);$('chartSummary').textContent='Registra tus pesos para generar la gráfica.'}
+ else{
+  const vals=data.map(r=>r.weight),min=Math.min(...vals),max=Math.max(...vals),pad= Math.max(.5,(max-min)*.25),lo=min-pad,hi=max+pad,left=43,right=12,top=15,bottom=35,cw=w-left-right,ch=h-top-bottom;
+  ctx.font='10px system-ui';ctx.textAlign='right';ctx.fillStyle='#71808b';
+  for(let i=0;i<4;i++){let y=top+ch*i/3;let val=hi-(hi-lo)*i/3;ctx.fillText(kg(val),left-8,y+3);ctx.strokeStyle='#e8eef0';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke()}
+  const pts=data.map((r,i)=>({x:left+(data.length===1?cw/2:cw*i/(data.length-1)),y:top+(hi-r.weight)/(hi-lo)*ch,r}));
+  if(pts.length>1){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineTo(pts.at(-1).x,top+ch);ctx.lineTo(pts[0].x,top+ch);ctx.closePath();let g=ctx.createLinearGradient(0,top,0,top+ch);g.addColorStop(0,'#16834b30');g.addColorStop(1,'#16834b00');ctx.fillStyle=g;ctx.fill();ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#16834b';ctx.lineWidth=2.7;ctx.lineJoin='round';ctx.stroke()}
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3.8,0,Math.PI*2);ctx.fillStyle='#16834b';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke()});
+  ctx.textAlign='center';ctx.fillStyle='#71808b';let count=Math.min(5,pts.length);for(let i=0;i<count;i++){let p=pts[Math.round(i*(pts.length-1)/Math.max(1,count-1))];ctx.fillText(fmtDate(p.r.date,{day:'2-digit',month:'short',year:'2-digit'}),p.x,h-10)}
+  $('chartSummary').textContent=`${data.length} registros · Mínimo ${kg(min)} kg · Máximo ${kg(max)} kg`;
+ }
+ const latest=ordered()[0];$('chartCurrent').textContent=latest?kg(latest.weight):'—';$('chartMin').textContent=list.length?kg(Math.min(...list.map(r=>r.weight))):'—';let first=list[0],last=list.at(-1);$('chartDelta').textContent=first&&last?signed(last.weight-first.weight):'—';
+}
+function render(){renderHistory();renderHome();renderChart()}
+function switchTab(name){document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.id!==name));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='grafica')renderChart();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+$('todayLabel').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+$('entryDate').textContent='Fecha de registro: '+fmtDate(isoToday());
+$('saveWeight').addEventListener('click',()=>{let value=Number(String($('weightInput').value).replace(',','.'));if(!Number.isFinite(value)||value<=0||value>500){$('saveNotice').textContent='Introduce un peso válido en kilogramos.';return}let date=isoToday();let idx=records.findIndex(r=>r.date===date);if(idx>=0)records[idx].weight=value;else records.push({date,weight:value});save(KEY,records);$('weightInput').value='';$('saveNotice').textContent='Peso guardado correctamente.';render()});
+$('saveGoal').addEventListener('click',()=>{let start=Number($('startWeight').value),target=Number($('targetWeight').value),date=$('goalDate').value;if(!start||!target||start<=target||target<=0){$('goalNotice').textContent='Introduce un peso inicial mayor que tu peso objetivo.';return}if(!date){$('goalNotice').textContent='Elige la fecha prevista para cumplir tu objetivo.';return}goal={...goal,start:String(start),target:String(target),date};save(GOAL,goal);$('goalNotice').textContent='Objetivo y fecha prevista guardados.';renderHome()});
+// Deslizar un registro hacia la izquierda muestra la papelera.
+let swipeStartX=0,swipeStartY=0,activeSwipe=null;
+$('history').addEventListener('touchstart',e=>{const row=e.target.closest('.history-row');if(!row)return;swipeStartX=e.changedTouches[0].clientX;swipeStartY=e.changedTouches[0].clientY;activeSwipe=row;},{passive:true});
+$('history').addEventListener('touchend',e=>{if(!activeSwipe)return;const dx=e.changedTouches[0].clientX-swipeStartX,dy=e.changedTouches[0].clientY-swipeStartY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){activeSwipe.classList.toggle('swiped',dx<0);$('history').querySelectorAll('.history-row').forEach(r=>{if(r!==activeSwipe)r.classList.remove('swiped')});}activeSwipe=null;},{passive:true});
+$('history').addEventListener('click',e=>{const button=e.target.closest('.delete-record');if(!button)return;const row=button.closest('.history-row'),date=row.dataset.date;if(!confirm(`¿Estás seguro de que quieres eliminar el registro del ${fmtDate(date,{day:'numeric',month:'long',year:'numeric'})}?`))return;records=records.filter(r=>r.date!==date);save(KEY,records);render();});
+document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{period=b.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));renderChart()}));
+$('monthPicker').value=isoToday().slice(0,7);$('monthPicker').addEventListener('change',renderChart);window.addEventListener('resize',()=>{if(!$('grafica').classList.contains('hidden'))renderChart()});
+render();
+if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+</script>
+</body></html>
